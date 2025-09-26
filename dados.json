@@ -1,0 +1,28 @@
+{
+    "funcionarios":[
+        {
+            "id": 1,
+            "Nome": "Julia Queiroz",
+            "Cargo": "Médica",
+            "Setor": "Saúde",
+            "Turno": "Noturno",
+            "Salário": "10.000"
+        },
+        {
+            "id": 2,
+            "Nome": "Nicolas Mota",
+            "Cargo": "Faxineiro",
+            "Setor": "Limpeza",
+            "Turno": "Integral",
+            "Salário": "2.000"
+        },
+        {
+             "id": 3,
+            "Nome": "Maria Luiza Alves",
+            "Cargo": "Enfermeira",
+            "Setor": "Saúde",
+            "Turno": "Manhã",
+            "Salário": "4.000"
+        }
+    ]
+}
