@@ -6,7 +6,8 @@
       "Cargo": "Médica",
       "Setor": "Saúde",
       "Turno": "Noturno",
-      "Salário": "10000"
+      "Salário": "10000",
+      "id": "8470"
     },
     {
       "Id": 2,
@@ -14,7 +15,8 @@
       "Cargo": "Faxineiro",
       "Setor": "Limpeza",
       "Turno": "Integral",
-      "Salário": "2000"
+      "Salário": "2000",
+      "id": "8fd5"
     },
     {
       "Id": 3,
@@ -22,7 +24,8 @@
       "Cargo": "Enfermeira",
       "Setor": "Saúde",
       "Turno": "Manhã",
-      "Salário": "4000"
+      "Salário": "4000",
+      "id": "aa64"
     }
   ]
 }

@@ -1,150 +1,130 @@
-import React, { useEffect, useState } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
-type TypeNovo = {
-  id: number;
-  nome: string;
-  cargo: string;
-  setor: string;
-  turno: string;
-  salario: number;
-}
+type Row = {
+  Id?: number;
+  Nome: string;
+  Cargo: string;
+  Setor: string;
+  Turno: string;
+  Salário: string;
+};
 
-export default function FormularioFuncionario(){
+const API = "http://localhost:5000/Funcionarios";
 
-const {id} = useParams()
+export default function FormularioFuncionario() {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { pathname } = useLocation();
 
-const navegacao = useNavigate()
+  const isIncluir = pathname.includes("/formulario/incluir");
+  const isEditar  = pathname.includes("/formulario/editar");
+  const isExcluir = pathname.includes("/formulario/excluir");
 
-const [novo, setNovo] = useState<TypeNovo>({
-    id: 0,
-    nome: "",
-    cargo: "",
-    setor: "",
-    turno: "",
-    salario: 0,
-})
+  const [form, setForm] = useState<Row>({
+    Nome: "", Cargo: "", Setor: "", Turno: "", Salário: ""
+  });
+  const [loading, setLoading] = useState(false);
 
-let metodo: string = "POST"
+  // carregar para editar/excluir
+  useEffect(() => {
+    if (!(isEditar || isExcluir) || !id) return;
+    (async () => {
+      const r = await fetch(`${API}/${id}`);
+      if (!r.ok) { alert("Falha ao carregar."); navigate("/listar"); return; }
+      const data = await r.json();
+      setForm({
+        Id: data.Id,
+        Nome: data.Nome ?? "",
+        Cargo: data.Cargo ?? "",
+        Setor: data.Setor ?? "",
+        Turno: data.Turno ?? "",
+        Salário: data["Salário"] ?? ""
+      });
+    })();
+  }, [id, isEditar, isExcluir, navigate]);
 
-if(id) metodo = "PUT"
+  // excluir (confirma e deleta)
+  useEffect(() => {
+    if (!isExcluir || !id) return;
+    (async () => {
+      const ok = confirm("Tem certeza que deseja excluir este funcionário?");
+      if (!ok) { navigate("/listar"); return; }
+      await fetch(`${API}/${id}`, { method: "DELETE" });
+      navigate("/listar");
+    })();
+  }, [isExcluir, id, navigate]);
 
-const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
 
-    setNovo({...novo,[name]:value})
-}
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const payload: Row = {
+        Nome: form.Nome.trim(),
+        Cargo: form.Cargo.trim(),
+        Setor: form.Setor.trim(),
+        Turno: form.Turno.trim(),
+        Salário: form.Salário.toString().trim()
+      };
+      const url = isEditar ? `${API}/${id}` : API;
+      const method = isEditar ? "PUT" : "POST";
+      const r = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!r.ok) throw new Error("Erro ao salvar.");
+      navigate("/listar");
+    } catch (e) {
+      alert((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const funcionario = { ...novo, cargo: String(novo.cargo), setor: String(novo.setor), turno:String(novo.turno), salario:Number(novo.salario)}
+  if (isExcluir) {
+    return (
+      <div className="max-w-xl m-auto my-10 text-center">
+        <p>Processando exclusão...</p>
+        <Link to="/listar" className="underline text-blue-600">Voltar à lista</Link>
+      </div>
+    );
+  }
 
-    fetch(`http://localhost:5000/funcionario/${id ? id : ""}`, {
-        method:metodo,
-        headers:{"Content-Type":"Aplication/json"},
-        body: JSON.stringify(funcionario)
-    })
-    .then(()=>navegacao('/'))
-    .catch(error=>console.log(error))
-}
+  return (
+    <section className="max-w-2xl m-auto">
+      <h2 className="text-3xl font-semibold text-blue-800 text-center mb-6">
+        {isEditar ? "Editar Funcionário" : "Cadastrar Funcionário"}
+      </h2>
 
-    useEffect(() =>{
-        if(id){
-            fetch(`http://localhost:5000/funcionario/${id}`)
-            .then(resp => resp.json())
-            .then(data => setNovo(data))
-            .catch(error=> console.log(error))
-        }
-
-
-
-    },[id])
-
-
-return (
-  <div className="max-w-2xl m-auto my-7">
-    <h1 className="text-blue-800 text-center font-bold mb-8 text-5xl">
-      Formulário de Funcionários
-    </h1>
-
-    <form
-      className="border-2 border-gray-400 rounded-md p-4"
-      onSubmit={handleSubmit}
-    >
-      <input
-        className="border-2 border-gray-400 rounded-md p-2 w-full mb-1"
-        type="text"
-        name="nome"
-        value={novo.nome}
-        placeholder="Nome"
-        onChange={handleChange}
-      />
-      <br />
-
-      <input
-        className="border-2 border-gray-400 rounded-md p-2 w-full mb-1"
-        type="text"
-        name="cargo"
-        value={novo.cargo}
-        placeholder="Cargo"
-        onChange={handleChange}
-      />
-      <br />
-
-      <input
-        className="border-2 border-gray-400 rounded-md p-2 w-full mb-1"
-        type="text"
-        name="setor"
-        value={novo.setor}
-        placeholder="Setor"
-        onChange={handleChange}
-      />
-      <br />
-
-      <input
-        className="border-2 border-gray-400 rounded-md p-2 w-full mb-1"
-        type="text"
-        name="turno"
-        value={novo.turno}
-        placeholder="Turno"
-        onChange={handleChange}
-      />
-      <br />
-
-      <input
-        className="border-2 border-gray-400 rounded-md p-2 w-full mb-1"
-        type="number"
-        name="salario"
-        value={novo.salario}
-        placeholder="Salário"
-        onChange={handleChange}
-        step={0.01}
-      />
-      <br />
-
-      <button
-        className="bg-green-500 text-white font-bold py-2 px-4 rounded-md mr-3"
-        type="submit"
+      <form
+        onSubmit={onSubmit}
+        className="border-2 border-gray-300 rounded-md p-4 bg-white shadow"
       >
-        Enviar
-      </button>
+        <input className="border-2 border-gray-300 rounded-md p-2 w-full mb-2" name="Nome" value={form.Nome} onChange={onChange} placeholder="Nome" required />
+        <input className="border-2 border-gray-300 rounded-md p-2 w-full mb-2" name="Cargo" value={form.Cargo} onChange={onChange} placeholder="Cargo" required />
+        <input className="border-2 border-gray-300 rounded-md p-2 w-full mb-2" name="Setor" value={form.Setor} onChange={onChange} placeholder="Setor" required />
+        <input className="border-2 border-gray-300 rounded-md p-2 w-full mb-2" name="Turno" value={form.Turno} onChange={onChange} placeholder="Turno" required />
+        <input className="border-2 border-gray-300 rounded-md p-2 w-full mb-4" name="Salário" value={form.Salário} onChange={onChange} placeholder="Salário" required />
 
-      <Link
-        className="bg-red-500 text-white font-bold py-2 px-4 rounded-md"
-        to="/"
-      >
-        Cancelar
-      </Link>
-    </form>
-  </div>
-);
-
-
-
-
-
-
-
-
-
+        <div className="flex justify-center gap-3">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-green-600 text-white font-semibold py-2 px-5 rounded-md hover:bg-green-700 disabled:opacity-60"
+          >
+            {loading ? "Salvando..." : isEditar ? "Atualizar" : "Salvar"}
+          </button>
+          <Link to="/listar" className="bg-red-600 text-white font-semibold py-2 px-5 rounded-md hover:bg-red-700">
+            Cancelar
+          </Link>
+        </div>
+      </form>
+    </section>
+  );
 }
