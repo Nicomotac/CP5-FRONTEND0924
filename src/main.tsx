@@ -1,46 +1,40 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import FormularioFuncionario from './Routes/Home/Formulario/FormularioFuncionario.tsx'
-import ListaFuncionario from './Routes/Home/ListaFuncionarios/ListaFuncionario.tsx'
-import PaginaInicial from './Routes/Home/PaginaInicial.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+import PaginaInicial from "./Routes/Home/PaginaInicial";
+import ListaFuncionario from "./Routes/Home/ListaFuncionarios/ListaFuncionario";
+import FormularioFuncionario from "./Routes/Home/Formulario/FormularioFuncionario";
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <PaginaInicial />,
+    path: "/",
+    element: <App />,
     children: [
-      {
-        path: '/',
-        element: <ListaFuncionario />
+      { index: true, 
+        element: <PaginaInicial /> 
       },
-      {
-        path: '/incluir',
-        element: <FormularioFuncionario />
-      },
-      {
-      path: '/editar/id',
-      element: <FormularioFuncionario />
-    },
-    {
-      path: '/excluir',
-      element: <FormularioFuncionario />
-    },
-    {
-      path: '/listar',
-      element: <FormularioFuncionario />
-    }
-
+      { path: "listar", 
+        element: <ListaFuncionario /> 
+      },              
+      { path: "formulario/incluir", 
+        element: <FormularioFuncionario /> 
+      }, 
+      { path: "formulario/editar/:id", 
+        element: <FormularioFuncionario /> 
+      }, 
+      { path: "formulario/excluir/:id", 
+        element: <FormularioFuncionario /> 
+      } 
     ]
   }
-])
+]);
 
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>
+);
 
-createRoot(document.getElementById('root')!).render(
-   <StrictMode>
-    <RouterProvider router ={router} />
-        <App />
-  </StrictMode>,
-)
